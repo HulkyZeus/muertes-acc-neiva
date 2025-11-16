@@ -25,22 +25,87 @@ def index():
 
 @app.get("/api/test-db")
 def test_db():
+    """
+    Endpoint general: verifica conexión y devuelve conteo de usuarios y accidentes.
+    """
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+
+        # Conteo de usuarios
         cur.execute("SELECT COUNT(*) FROM usuarios;")
-        total = cur.fetchone()[0]
+        total_usuarios = cur.fetchone()[0]
+
+        # Conteo de accidentes
+        cur.execute("SELECT COUNT(*) FROM muertes_accidentes;")
+        total_accidentes = cur.fetchone()[0]
+
         cur.close()
         conn.close()
+
         return jsonify({
             "db_status": "ok",
-            "total_usuarios": total
+            "total_usuarios": total_usuarios,
+            "total_accidentes": total_accidentes
         })
     except Exception as e:
         return jsonify({
             "db_status": "error",
             "details": str(e)
         }), 500
+
+
+@app.get("/api/test-usuarios")
+def test_usuarios():
+    """
+    Endpoint específico para probar la tabla 'usuarios'.
+    """
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT COUNT(*) FROM usuarios;")
+        total_usuarios = cur.fetchone()[0]
+
+        cur.close()
+        conn.close()
+
+        return jsonify({
+            "db_status": "ok",
+            "total_usuarios": total_usuarios
+        })
+    except Exception as e:
+        return jsonify({
+            "db_status": "error",
+            "details": str(e)
+        }), 500
+
+
+@app.get("/api/test-accidentes")
+def test_accidentes():
+    """
+    Endpoint específico para probar la tabla 'muertes_accidentes'.
+    """
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT COUNT(*) FROM muertes_accidentes;")
+        total_accidentes = cur.fetchone()[0]
+
+        cur.close()
+        conn.close()
+
+        return jsonify({
+            "db_status": "ok",
+            "total_accidentes": total_accidentes
+        })
+    except Exception as e:
+        return jsonify({
+            "db_status": "error",
+            "details": str(e)
+        }), 500
+
 
 @app.get("/api/accidentes")
 def listar_accidentes():
