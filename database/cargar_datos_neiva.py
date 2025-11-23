@@ -181,7 +181,7 @@ def insertar_registros(registros):
             "dia_de_la_semana": normalizar_dia_semana(r.get("dia_de_la_semana")),
             "hora_del_hecho": hora_del_hecho,
             "comuna_corregimiento": normalizar_comuna(r.get("comuna_corregimiento")),
-            "tipo_de_via_de_hechos": r.get("tipo_de_via_de_hechos")
+            "tipo_de_via_de_hechos": r.get("tipo_de_via_de_hechos"),
             "clase_de_accidente": normalizar_clase_accidente(r.get("clase_de_accidente")),
             "genero": r.get("genero"),
             "edad": edad,

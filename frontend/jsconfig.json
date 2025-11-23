@@ -1,8 +1,27 @@
 {
   "compilerOptions": {
+    "target": "ES2020", 
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    
+    // **CLAVE:** Define la base para la resolución de rutas
+    "baseUrl": ".", 
+    
+    // **CLAVE:** Define el alias
     "paths": {
-      "@/*": ["./src/*"]
+      // El alias @/ ahora apunta a la carpeta src
+      "@/*": [
+        "./src/*" 
+      ]
     }
   },
-  "exclude": ["node_modules", "dist"]
+  "include": [
+      "src/**/*", 
+      "src/**/*.vue"
+    ],
+    "exclude": [
+      "node_modules", 
+      "dist"
+    ]
 }
