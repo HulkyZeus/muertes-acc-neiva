@@ -2,6 +2,8 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import '/node_modules/flowbite-datepicker/dist/css/datepicker.css'
+import 'primeicons/primeicons.css'
 import 'flowbite-vue/index.css' 
 
 import App from './App.vue'
