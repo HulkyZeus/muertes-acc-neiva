@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module cargar_datos_neiva</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">cargar_datos_neiva</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:/home/mjgaar/proyecto_neiva/database/cargar_datos_neiva.py">/home/mjgaar/proyecto_neiva/database/cargar_datos_neiva.py</a></td></tr></table>
+    <p><span class="code">Script&nbsp;de&nbsp;carga&nbsp;y&nbsp;normalización&nbsp;de&nbsp;datos&nbsp;para&nbsp;la&nbsp;base&nbsp;`muertes_acc_neiva`.<br>
+&nbsp;<br>
+Este&nbsp;módulo:<br>
+-&nbsp;Descarga&nbsp;registros&nbsp;desde&nbsp;el&nbsp;portal&nbsp;de&nbsp;Datos&nbsp;Abiertos&nbsp;de&nbsp;Colombia<br>
+&nbsp;&nbsp;(dataset:&nbsp;muertes&nbsp;por&nbsp;accidentes&nbsp;de&nbsp;tránsito&nbsp;en&nbsp;Neiva).<br>
+-&nbsp;Normaliza&nbsp;campos&nbsp;clave&nbsp;(fecha,&nbsp;hora,&nbsp;día&nbsp;de&nbsp;la&nbsp;semana,&nbsp;comuna,&nbsp;clase&nbsp;de&nbsp;accidente,<br>
+&nbsp;&nbsp;características&nbsp;de&nbsp;la&nbsp;víctima).<br>
+-&nbsp;Inserta&nbsp;los&nbsp;registros&nbsp;en&nbsp;la&nbsp;tabla&nbsp;`muertes_accidentes`&nbsp;de&nbsp;PostgreSQL,&nbsp;incluyendo:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Campos&nbsp;derivados&nbsp;(año,&nbsp;mes).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;El&nbsp;JSON&nbsp;original&nbsp;como&nbsp;`fuente_raw`&nbsp;para&nbsp;trazabilidad/auditoría.<br>
+&nbsp;<br>
+Uso&nbsp;típico&nbsp;(desde&nbsp;consola):<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;python&nbsp;cargar_datos_neiva.py<br>
+&nbsp;<br>
+Al&nbsp;ejecutarse&nbsp;como&nbsp;script,&nbsp;descarga&nbsp;los&nbsp;datos&nbsp;y&nbsp;los&nbsp;inserta&nbsp;en&nbsp;la&nbsp;base&nbsp;de&nbsp;datos.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="psycopg2.html">psycopg2</a><br>
+</td><td class="multicolumn"><a href="requests.html">requests</a><br>
+</td><td class="multicolumn"></td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-descargar_datos"><strong>descargar_datos</strong></a>()</dt><dd><span class="code">Descarga&nbsp;los&nbsp;registros&nbsp;desde&nbsp;el&nbsp;portal&nbsp;de&nbsp;Datos&nbsp;Abiertos.<br>
+&nbsp;<br>
+Utiliza&nbsp;`DATA_URL`&nbsp;como&nbsp;fuente&nbsp;y&nbsp;asume&nbsp;que&nbsp;la&nbsp;respuesta&nbsp;es&nbsp;un&nbsp;arreglo&nbsp;JSON.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list[dict]:&nbsp;Lista&nbsp;de&nbsp;registros&nbsp;(cada&nbsp;uno&nbsp;como&nbsp;diccionario)&nbsp;si&nbsp;la&nbsp;descarga&nbsp;es&nbsp;exitosa.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;requests.HTTPError:&nbsp;Si&nbsp;la&nbsp;respuesta&nbsp;HTTP&nbsp;no&nbsp;es&nbsp;exitosa&nbsp;(4xx&nbsp;o&nbsp;5xx).</span></dd></dl>
+ <dl><dt><a name="-get_db_connection"><strong>get_db_connection</strong></a>()</dt><dd><span class="code">Crea&nbsp;y&nbsp;retorna&nbsp;una&nbsp;conexión&nbsp;nueva&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;PostgreSQL.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;psycopg2.extensions.connection:&nbsp;Objeto&nbsp;de&nbsp;conexión&nbsp;activo.</span></dd></dl>
+ <dl><dt><a name="-insertar_registros"><strong>insertar_registros</strong></a>(registros)</dt><dd><span class="code">Inserta&nbsp;en&nbsp;la&nbsp;tabla&nbsp;`muertes_accidentes`&nbsp;los&nbsp;registros&nbsp;ya&nbsp;descargados&nbsp;y&nbsp;normalizados.<br>
+&nbsp;<br>
+Para&nbsp;cada&nbsp;registro:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Se&nbsp;parsean&nbsp;fecha&nbsp;y&nbsp;hora.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Se&nbsp;normalizan&nbsp;día&nbsp;de&nbsp;la&nbsp;semana,&nbsp;comuna,&nbsp;clase&nbsp;de&nbsp;accidente&nbsp;y&nbsp;características.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Se&nbsp;calcula&nbsp;año&nbsp;y&nbsp;mes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Se&nbsp;almacena&nbsp;el&nbsp;JSON&nbsp;completo&nbsp;en&nbsp;`fuente_raw`&nbsp;para&nbsp;trazabilidad.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;registros&nbsp;(list[dict]):&nbsp;Lista&nbsp;de&nbsp;registros&nbsp;tal&nbsp;como&nbsp;se&nbsp;reciben&nbsp;desde&nbsp;Datos&nbsp;Abiertos.</span></dd></dl>
+ <dl><dt><a name="-normalizar_caracteristica_victima"><strong>normalizar_caracteristica_victima</strong></a>(t: str) -&gt; str</dt><dd><span class="code">Normaliza&nbsp;las&nbsp;características&nbsp;de&nbsp;la&nbsp;víctima&nbsp;a&nbsp;categorías&nbsp;homogéneas.<br>
+&nbsp;<br>
+Agrupa&nbsp;descripciones&nbsp;libres&nbsp;en&nbsp;etiquetas&nbsp;como:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"Conductor&nbsp;de&nbsp;moto"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"Conductor&nbsp;de&nbsp;vehículo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"Pasajero&nbsp;de&nbsp;moto"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"Pasajero&nbsp;de&nbsp;vehículo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"Peatón"<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;t&nbsp;(str):&nbsp;Texto&nbsp;libre&nbsp;original&nbsp;de&nbsp;la&nbsp;característica&nbsp;de&nbsp;la&nbsp;víctima.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str&nbsp;or&nbsp;None:&nbsp;Descripción&nbsp;normalizada&nbsp;o&nbsp;None&nbsp;si&nbsp;la&nbsp;entrada&nbsp;es&nbsp;vacía.</span></dd></dl>
+ <dl><dt><a name="-normalizar_clase_accidente"><strong>normalizar_clase_accidente</strong></a>(texto: str) -&gt; str</dt><dd><span class="code">Normaliza&nbsp;la&nbsp;descripción&nbsp;de&nbsp;la&nbsp;clase&nbsp;de&nbsp;accidente&nbsp;a&nbsp;categorías&nbsp;predefinidas.<br>
+&nbsp;<br>
+Ejemplos&nbsp;de&nbsp;mapeo:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"colision&nbsp;...&nbsp;objeto&nbsp;móvil"&nbsp;-&gt;&nbsp;"Colisión&nbsp;con&nbsp;objeto&nbsp;móvil"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"colision&nbsp;...&nbsp;objeto&nbsp;fijo"&nbsp;&nbsp;-&gt;&nbsp;"Colisión&nbsp;con&nbsp;objeto&nbsp;fijo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"caida&nbsp;de&nbsp;ocupante"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;"Caída&nbsp;de&nbsp;ocupante"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"peaton&nbsp;atropellado"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;"Peatón&nbsp;atropellado"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"ciclista&nbsp;atropellado"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;"Ciclista&nbsp;atropellado"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"otra&nbsp;clase&nbsp;de&nbsp;accidente"&nbsp;&nbsp;-&gt;&nbsp;"Otra&nbsp;clase&nbsp;de&nbsp;accidente"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;"sin&nbsp;dato/sin&nbsp;datos"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;"Sin&nbsp;dato"<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;texto&nbsp;(str):&nbsp;Descripción&nbsp;original&nbsp;de&nbsp;la&nbsp;clase&nbsp;de&nbsp;accidente.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str&nbsp;or&nbsp;None:&nbsp;Cadena&nbsp;normalizada&nbsp;o&nbsp;None&nbsp;si&nbsp;la&nbsp;entrada&nbsp;es&nbsp;vacía.</span></dd></dl>
+ <dl><dt><a name="-normalizar_comuna"><strong>normalizar_comuna</strong></a>(t: str) -&gt; str</dt><dd><span class="code">Normaliza&nbsp;el&nbsp;nombre&nbsp;de&nbsp;la&nbsp;comuna&nbsp;o&nbsp;corregimiento.<br>
+&nbsp;<br>
+Por&nbsp;ahora&nbsp;solo&nbsp;unifica&nbsp;el&nbsp;caso&nbsp;de&nbsp;'Río&nbsp;Las&nbsp;Ceibas',&nbsp;pero&nbsp;se&nbsp;puede&nbsp;ampliar<br>
+con&nbsp;más&nbsp;reglas&nbsp;de&nbsp;normalización.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;t&nbsp;(str):&nbsp;Texto&nbsp;original&nbsp;de&nbsp;la&nbsp;comuna/corregimiento.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str&nbsp;or&nbsp;None:&nbsp;Nombre&nbsp;normalizado&nbsp;o&nbsp;None&nbsp;si&nbsp;la&nbsp;entrada&nbsp;es&nbsp;vacía.</span></dd></dl>
+ <dl><dt><a name="-normalizar_dia_semana"><strong>normalizar_dia_semana</strong></a>(t: str) -&gt; str</dt><dd><span class="code">Normaliza&nbsp;el&nbsp;valor&nbsp;del&nbsp;día&nbsp;de&nbsp;la&nbsp;semana&nbsp;a&nbsp;una&nbsp;forma&nbsp;canónica&nbsp;con&nbsp;mayúscula&nbsp;inicial.<br>
+&nbsp;<br>
+Mapea&nbsp;variantes&nbsp;en&nbsp;minúsculas&nbsp;y&nbsp;sin&nbsp;tilde&nbsp;a&nbsp;su&nbsp;forma&nbsp;estándar&nbsp;(ej.&nbsp;"miercoles"&nbsp;-&gt;&nbsp;"Miércoles").<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;t&nbsp;(str):&nbsp;Texto&nbsp;original&nbsp;del&nbsp;día&nbsp;de&nbsp;la&nbsp;semana.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;str&nbsp;or&nbsp;None:&nbsp;Día&nbsp;normalizado&nbsp;o&nbsp;None&nbsp;si&nbsp;la&nbsp;entrada&nbsp;es&nbsp;vacía.</span></dd></dl>
+ <dl><dt><a name="-parse_fecha"><strong>parse_fecha</strong></a>(fecha_str: str)</dt><dd><span class="code">Convierte&nbsp;fecha_del_hecho&nbsp;(string&nbsp;ISO)&nbsp;a:<br>
+-&nbsp;datetime&nbsp;completo<br>
+-&nbsp;año&nbsp;(int)<br>
+-&nbsp;mes&nbsp;(int)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Ejemplo&nbsp;de&nbsp;entrada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"2012-01-01T00:00:00.000"<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fecha_str&nbsp;(str):&nbsp;Fecha&nbsp;del&nbsp;hecho&nbsp;en&nbsp;formato&nbsp;ISO&nbsp;(o&nbsp;None).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;datetime&nbsp;or&nbsp;None:&nbsp;Fecha&nbsp;completa&nbsp;del&nbsp;hecho.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;int&nbsp;or&nbsp;None:&nbsp;Año&nbsp;del&nbsp;hecho.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;int&nbsp;or&nbsp;None:&nbsp;Mes&nbsp;del&nbsp;hecho.</span></dd></dl>
+ <dl><dt><a name="-parse_hora"><strong>parse_hora</strong></a>(hora_str: str)</dt><dd><span class="code">Convierte&nbsp;hora_del_hecho_hh_mm&nbsp;(ej.&nbsp;'1899-12-31T05:05:00.000')&nbsp;a&nbsp;TIME.<br>
+Solo&nbsp;nos&nbsp;interesa&nbsp;la&nbsp;hora:minuto:segundo.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hora_str&nbsp;(str):&nbsp;Hora&nbsp;en&nbsp;formato&nbsp;ISO&nbsp;(o&nbsp;None).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;datetime.time&nbsp;or&nbsp;None:&nbsp;Hora&nbsp;del&nbsp;hecho&nbsp;o&nbsp;None&nbsp;si&nbsp;no&nbsp;se&nbsp;puede&nbsp;parsear.</span></dd></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>DATA_URL</strong> = 'https://www.datos.gov.co/resource/2vxy-7tvy.json?$limit=50000'<br>
+<strong>DB_HOST</strong> = 'localhost'<br>
+<strong>DB_NAME</strong> = 'muertes_acc_neiva'<br>
+<strong>DB_PASSWORD</strong> = 'neiva123'<br>
+<strong>DB_PORT</strong> = 5432<br>
+<strong>DB_USER</strong> = 'neiva_user'</td></tr></table>
+</body></html>

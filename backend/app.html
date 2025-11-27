@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module app</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">app</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:/home/mjgaar/proyecto_neiva/backend/app.py">/home/mjgaar/proyecto_neiva/backend/app.py</a></td></tr></table>
+    <p><span class="code">Backend&nbsp;Flask&nbsp;para&nbsp;el&nbsp;proyecto&nbsp;"Muertes&nbsp;Accidentes&nbsp;Tránsito&nbsp;del&nbsp;municipio&nbsp;de&nbsp;Neiva".<br>
+&nbsp;<br>
+Este&nbsp;módulo&nbsp;expone:<br>
+-&nbsp;Endpoints&nbsp;de&nbsp;prueba&nbsp;de&nbsp;conexión&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos.<br>
+-&nbsp;Endpoints&nbsp;de&nbsp;autenticación&nbsp;(login&nbsp;/&nbsp;logout).<br>
+-&nbsp;CRUD&nbsp;básico&nbsp;sobre&nbsp;la&nbsp;tabla&nbsp;`muertes_accidentes`.<br>
+-&nbsp;Endpoints&nbsp;de&nbsp;estadísticas&nbsp;agregadas&nbsp;(por&nbsp;año,&nbsp;comuna,&nbsp;clase&nbsp;de&nbsp;accidente).<br>
+-&nbsp;Funcionalidades&nbsp;de&nbsp;exportación&nbsp;de&nbsp;datos&nbsp;a&nbsp;Excel&nbsp;y&nbsp;PDF.<br>
+&nbsp;<br>
+Tecnologías&nbsp;clave:<br>
+-&nbsp;Flask&nbsp;como&nbsp;framework&nbsp;web.<br>
+-&nbsp;PostgreSQL&nbsp;como&nbsp;base&nbsp;de&nbsp;datos&nbsp;(psycopg2&nbsp;como&nbsp;driver).<br>
+-&nbsp;Pandas&nbsp;para&nbsp;manipulación&nbsp;de&nbsp;datos&nbsp;tabulares.<br>
+-&nbsp;ReportLab&nbsp;para&nbsp;generación&nbsp;de&nbsp;reportes&nbsp;en&nbsp;PDF.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="reportlab.lib.colors.html">reportlab.lib.colors</a><br>
+</td><td class="multicolumn"><a href="os.html">os</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="psycopg2.html">psycopg2</a><br>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><a name="-actualizar_accidente"><strong>actualizar_accidente</strong></a>(accidente_id)</dt><dd><span class="code">Actualiza&nbsp;un&nbsp;registro&nbsp;de&nbsp;accidente&nbsp;en&nbsp;la&nbsp;tabla&nbsp;muertes_accidentes.<br>
+&nbsp;<br>
+Espera&nbsp;un&nbsp;JSON&nbsp;con&nbsp;los&nbsp;campos:<br>
+-&nbsp;fecha_del_hecho&nbsp;(YYYY-MM-DD)<br>
+-&nbsp;dia_de_la_semana<br>
+-&nbsp;hora_del_hecho&nbsp;(HH:MM&nbsp;o&nbsp;HH:MM:SS)<br>
+-&nbsp;comuna_corregimiento<br>
+-&nbsp;tipo_de_via_de_hechos<br>
+-&nbsp;clase_de_accidente<br>
+-&nbsp;genero<br>
+-&nbsp;edad<br>
+-&nbsp;caracteristicas_de_la_victima<br>
+-&nbsp;vehiculo_de_la_victima<br>
+-&nbsp;vehiculo_2_de_la_contraparte<br>
+-&nbsp;vehiculo_3_de_la_contraparte<br>
+-&nbsp;vehiculo_4_de_la_contraparte<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;accidente_id&nbsp;(int):&nbsp;Identificador&nbsp;del&nbsp;accidente&nbsp;a&nbsp;actualizar.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;200&nbsp;OK:&nbsp;si&nbsp;el&nbsp;registro&nbsp;fue&nbsp;actualizado.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;400&nbsp;Bad&nbsp;Request:&nbsp;si&nbsp;falta&nbsp;algún&nbsp;campo&nbsp;obligatorio.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;404&nbsp;Not&nbsp;Found:&nbsp;si&nbsp;el&nbsp;id&nbsp;no&nbsp;existe.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;500&nbsp;Internal&nbsp;Server&nbsp;Error:&nbsp;si&nbsp;hay&nbsp;error&nbsp;en&nbsp;la&nbsp;actualización.</span></dd></dl>
+ <dl><dt><a name="-crear_accidente"><strong>crear_accidente</strong></a>()</dt><dd><span class="code">Crea&nbsp;un&nbsp;nuevo&nbsp;registro&nbsp;de&nbsp;accidente&nbsp;en&nbsp;la&nbsp;tabla&nbsp;muertes_accidentes.<br>
+Body&nbsp;JSON&nbsp;esperado&nbsp;(campos&nbsp;obligatorios):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;fecha_del_hecho&nbsp;(str,&nbsp;YYYY-MM-DD)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;dia_de_la_semana&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;hora_del_hecho&nbsp;(str,&nbsp;HH:MM&nbsp;o&nbsp;HH:MM:SS)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;comuna_corregimiento&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;tipo_de_via_de_hechos&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;clase_de_accidente&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;genero&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;edad&nbsp;(int&nbsp;o&nbsp;str&nbsp;convertible&nbsp;a&nbsp;int)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;caracteristicas_de_la_victima&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vehiculo_de_la_victima&nbsp;(str)<br>
+&nbsp;<br>
+Campos&nbsp;opcionales:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vehiculo_2_de_la_contraparte<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vehiculo_3_de_la_contraparte<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;vehiculo_4_de_la_contraparte<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;201&nbsp;Created:&nbsp;con&nbsp;el&nbsp;id&nbsp;del&nbsp;nuevo&nbsp;registro.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;400&nbsp;Bad&nbsp;Request:&nbsp;si&nbsp;falta&nbsp;algún&nbsp;campo&nbsp;obligatorio.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;500&nbsp;Internal&nbsp;Server&nbsp;Error:&nbsp;si&nbsp;ocurre&nbsp;un&nbsp;error&nbsp;al&nbsp;insertar.</span></dd></dl>
+ <dl><dt><a name="-eliminar_accidente"><strong>eliminar_accidente</strong></a>(accidente_id)</dt><dd><span class="code">Elimina&nbsp;un&nbsp;registro&nbsp;de&nbsp;accidente&nbsp;por&nbsp;su&nbsp;id.<br>
+Precondición:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;El&nbsp;usuario&nbsp;debe&nbsp;estar&nbsp;autenticado&nbsp;(sesión&nbsp;activa).<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;accidente_id&nbsp;(int):&nbsp;Identificador&nbsp;del&nbsp;accidente&nbsp;a&nbsp;eliminar.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;204&nbsp;No&nbsp;Content:&nbsp;Eliminado&nbsp;correctamente.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;404&nbsp;Not&nbsp;Found:&nbsp;No&nbsp;existe&nbsp;un&nbsp;registro&nbsp;con&nbsp;ese&nbsp;id.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;401&nbsp;Unauthorized:&nbsp;Si&nbsp;no&nbsp;hay&nbsp;sesión&nbsp;iniciada.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;500&nbsp;Internal&nbsp;Server&nbsp;Error:&nbsp;Error&nbsp;inesperado&nbsp;del&nbsp;servidor.</span></dd></dl>
+ <dl><dt><a name="-estadisticas_por_anio"><strong>estadisticas_por_anio</strong></a>()</dt><dd><span class="code">Devuelve&nbsp;total&nbsp;de&nbsp;accidentes&nbsp;por&nbsp;año&nbsp;(ano).<br>
+&nbsp;<br>
+&nbsp;Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;Lista&nbsp;JSON&nbsp;de&nbsp;objetos&nbsp;con:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;ano&nbsp;(int):&nbsp;Año&nbsp;de&nbsp;ocurrencia.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;total&nbsp;(int):&nbsp;Número&nbsp;de&nbsp;registros&nbsp;en&nbsp;ese&nbsp;año.</span></dd></dl>
+ <dl><dt><a name="-estadisticas_por_clase"><strong>estadisticas_por_clase</strong></a>()</dt><dd><span class="code">Devuelve&nbsp;total&nbsp;de&nbsp;accidentes&nbsp;por&nbsp;clase_de_accidente.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;Lista&nbsp;JSON&nbsp;de&nbsp;objetos&nbsp;con:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;clase_de_accidente&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;total&nbsp;(int)</span></dd></dl>
+ <dl><dt><a name="-estadisticas_por_comuna"><strong>estadisticas_por_comuna</strong></a>()</dt><dd><span class="code">Devuelve&nbsp;total&nbsp;de&nbsp;accidentes&nbsp;por&nbsp;comuna_corregimiento.<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;Lista&nbsp;JSON&nbsp;de&nbsp;objetos&nbsp;con:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;comuna_corregimiento&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;total&nbsp;(int)</span></dd></dl>
+ <dl><dt><a name="-exportar_datos"><strong>exportar_datos</strong></a>()</dt><dd><span class="code">Exporta&nbsp;los&nbsp;registros&nbsp;de&nbsp;`muertes_accidentes`&nbsp;a&nbsp;Excel&nbsp;o&nbsp;PDF&nbsp;según&nbsp;los&nbsp;filtros.<br>
+&nbsp;<br>
+Query&nbsp;params:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;formato&nbsp;(str):&nbsp;"excel"&nbsp;o&nbsp;"pdf"&nbsp;(obligatorio).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;mismos&nbsp;filtros&nbsp;que&nbsp;`obtener_datos_accidentes`:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(fecha_desde,&nbsp;fecha_hasta,&nbsp;comuna_corregimiento,&nbsp;tipo_via,&nbsp;etc.)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Archivo&nbsp;Excel&nbsp;(.xlsx)&nbsp;o&nbsp;PDF&nbsp;descargable.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;400&nbsp;Bad&nbsp;Request:&nbsp;si&nbsp;el&nbsp;formato&nbsp;no&nbsp;es&nbsp;soportado.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;404&nbsp;Not&nbsp;Found:&nbsp;si&nbsp;no&nbsp;hay&nbsp;datos&nbsp;para&nbsp;los&nbsp;filtros&nbsp;aplicados.</span></dd></dl>
+ <dl><dt><a name="-formatear_filtros"><strong>formatear_filtros</strong></a>(filtros: dict) -&gt; list[tuple]</dt><dd><span class="code">Convierte&nbsp;los&nbsp;parámetros&nbsp;de&nbsp;filtro&nbsp;de&nbsp;la&nbsp;URL&nbsp;a&nbsp;una&nbsp;lista&nbsp;de&nbsp;tuplas&nbsp;legible.<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filtros&nbsp;(dict):&nbsp;Diccionario&nbsp;con&nbsp;filtros&nbsp;tal&nbsp;como&nbsp;llegan&nbsp;por&nbsp;`request.args`.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list[tuple[str,&nbsp;str]]:&nbsp;Lista&nbsp;de&nbsp;pares&nbsp;(nombre_filtro_legible,&nbsp;valor).</span></dd></dl>
+ <dl><dt><a name="-generar_pdf"><strong>generar_pdf</strong></a>(datos, filtros_aplicados)</dt><dd><span class="code">Genera&nbsp;un&nbsp;reporte&nbsp;en&nbsp;PDF&nbsp;a&nbsp;partir&nbsp;de&nbsp;los&nbsp;datos&nbsp;de&nbsp;accidentes&nbsp;y&nbsp;filtros&nbsp;aplicados.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;datos&nbsp;(list[dict]):&nbsp;Registros&nbsp;a&nbsp;incluir&nbsp;en&nbsp;la&nbsp;tabla&nbsp;del&nbsp;reporte.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filtros_aplicados&nbsp;(dict):&nbsp;Filtros&nbsp;originales&nbsp;recibidos&nbsp;en&nbsp;la&nbsp;petición.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;BytesIO:&nbsp;Buffer&nbsp;en&nbsp;memoria&nbsp;posicionado&nbsp;al&nbsp;inicio&nbsp;listo&nbsp;para&nbsp;ser&nbsp;enviado&nbsp;con&nbsp;send_file.</span></dd></dl>
+ <dl><dt><a name="-get_db_connection"><strong>get_db_connection</strong></a>()</dt><dd><span class="code">Crea&nbsp;y&nbsp;devuelve&nbsp;una&nbsp;conexión&nbsp;nueva&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;PostgreSQL.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;psycopg2.extensions.connection:&nbsp;Conexión&nbsp;abierta&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos.<br>
+&nbsp;<br>
+Raises:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;psycopg2.Error:&nbsp;Si&nbsp;ocurre&nbsp;un&nbsp;error&nbsp;al&nbsp;conectarse&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos.</span></dd></dl>
+ <dl><dt><a name="-index"><strong>index</strong></a>()</dt><dd><span class="code">Endpoint&nbsp;raíz&nbsp;del&nbsp;backend.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict:&nbsp;Mensaje&nbsp;de&nbsp;estado&nbsp;simple&nbsp;para&nbsp;verificar&nbsp;que&nbsp;el&nbsp;backend&nbsp;está&nbsp;activo.</span></dd></dl>
+ <dl><dt><a name="-listar_accidentes"><strong>listar_accidentes</strong></a>()</dt><dd><span class="code">Lista&nbsp;de&nbsp;accidentes&nbsp;con&nbsp;todos&nbsp;los&nbsp;filtros&nbsp;opcionales:<br>
+-&nbsp;anio&nbsp;(ano)<br>
+-&nbsp;comuna&nbsp;(comuna_corregimiento)<br>
+-&nbsp;genero<br>
+-&nbsp;clase&nbsp;(clase_de_accidente)<br>
+-&nbsp;fecha_desde&nbsp;(Formato:&nbsp;YYYY-MM-DD)<br>
+-&nbsp;fecha_hasta&nbsp;(Formato:&nbsp;YYYY-MM-DD)<br>
+-&nbsp;limite&nbsp;(limit&nbsp;de&nbsp;registros,&nbsp;por&nbsp;defecto&nbsp;100)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;total&nbsp;(int):&nbsp;Número&nbsp;de&nbsp;registros&nbsp;devueltos.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;items&nbsp;(list[dict]):&nbsp;Lista&nbsp;de&nbsp;accidentes.</span></dd></dl>
+ <dl><dt><a name="-login"><strong>login</strong></a>()</dt><dd><span class="code">Autentica&nbsp;a&nbsp;un&nbsp;usuario&nbsp;a&nbsp;partir&nbsp;de&nbsp;correo&nbsp;y&nbsp;contraseña.<br>
+&nbsp;<br>
+Body&nbsp;JSON&nbsp;esperado:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;email&nbsp;(str):&nbsp;Correo&nbsp;del&nbsp;usuario.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;password&nbsp;(str):&nbsp;Contraseña&nbsp;en&nbsp;texto&nbsp;plano.<br>
+&nbsp;<br>
+Flujo:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;Valida&nbsp;que&nbsp;los&nbsp;campos&nbsp;existan.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;Busca&nbsp;el&nbsp;usuario&nbsp;por&nbsp;correo&nbsp;en&nbsp;la&nbsp;tabla&nbsp;`usuarios`.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.&nbsp;Verifica&nbsp;el&nbsp;hash&nbsp;de&nbsp;la&nbsp;contraseña.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.&nbsp;Guarda&nbsp;en&nbsp;`session`&nbsp;el&nbsp;id&nbsp;y&nbsp;rol&nbsp;del&nbsp;usuario.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con&nbsp;información&nbsp;básica&nbsp;del&nbsp;usuario&nbsp;y&nbsp;mensaje&nbsp;"login_ok"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;un&nbsp;mensaje&nbsp;de&nbsp;error&nbsp;con&nbsp;el&nbsp;código&nbsp;HTTP&nbsp;correspondiente:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;400:&nbsp;missing_fields<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;404:&nbsp;email_not_found<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;401:&nbsp;invalid_password</span></dd></dl>
+ <dl><dt><a name="-logout"><strong>logout</strong></a>()</dt><dd><span class="code">Cierra&nbsp;la&nbsp;sesión&nbsp;del&nbsp;usuario&nbsp;autenticado.<br>
+&nbsp;<br>
+Elimina&nbsp;todos&nbsp;los&nbsp;datos&nbsp;almacenados&nbsp;en&nbsp;`session`.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con&nbsp;mensaje&nbsp;"logout_ok".</span></dd></dl>
+ <dl><dt><a name="-obtener_datos_accidentes"><strong>obtener_datos_accidentes</strong></a>(filtros)</dt><dd><span class="code">Obtiene&nbsp;los&nbsp;registros&nbsp;de&nbsp;`muertes_accidentes`&nbsp;aplicando&nbsp;filtros&nbsp;dinámicos.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filtros&nbsp;(dict):&nbsp;Diccionario&nbsp;con&nbsp;posibles&nbsp;claves:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;fecha_desde&nbsp;(str,&nbsp;YYYY-MM-DD)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;fecha_hasta&nbsp;(str,&nbsp;YYYY-MM-DD)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;comuna_corregimiento&nbsp;(str)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;tipo_via&nbsp;(str,&nbsp;mapeado&nbsp;a&nbsp;tipo_de_via_de_hechos)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list[dict]:&nbsp;Lista&nbsp;de&nbsp;registros&nbsp;convertidos&nbsp;a&nbsp;diccionario,&nbsp;listos&nbsp;para&nbsp;exportar.</span></dd></dl>
+ <dl><dt><a name="-require_login"><strong>require_login</strong></a>()</dt><dd><span class="code">Verifica&nbsp;si&nbsp;existe&nbsp;un&nbsp;usuario&nbsp;autenticado&nbsp;en&nbsp;la&nbsp;sesión.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool:&nbsp;True&nbsp;si&nbsp;hay&nbsp;un&nbsp;usuario&nbsp;logueado&nbsp;(session["id"]&nbsp;existe),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;False&nbsp;en&nbsp;caso&nbsp;contrario.</span></dd></dl>
+ <dl><dt><a name="-test_accidentes"><strong>test_accidentes</strong></a>()</dt><dd><span class="code">Endpoint&nbsp;específico&nbsp;para&nbsp;probar&nbsp;la&nbsp;tabla&nbsp;'muertes_accidentes'.<br>
+&nbsp;<br>
+Realiza&nbsp;un&nbsp;COUNT(*)&nbsp;sobre&nbsp;la&nbsp;tabla&nbsp;para&nbsp;comprobar&nbsp;que&nbsp;existe&nbsp;y&nbsp;que&nbsp;la<br>
+conexión&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;funciona&nbsp;correctamente.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con&nbsp;el&nbsp;conteo&nbsp;de&nbsp;accidentes&nbsp;o&nbsp;error&nbsp;500&nbsp;si&nbsp;algo&nbsp;falla.</span></dd></dl>
+ <dl><dt><a name="-test_db"><strong>test_db</strong></a>()</dt><dd><span class="code">Endpoint&nbsp;general:&nbsp;verifica&nbsp;conexión&nbsp;y&nbsp;devuelve&nbsp;conteo&nbsp;de&nbsp;usuarios&nbsp;y&nbsp;accidentes.<br>
+&nbsp;<br>
+Realiza&nbsp;un&nbsp;COUNT(*)&nbsp;sobre&nbsp;las&nbsp;tablas&nbsp;`usuarios`&nbsp;y&nbsp;`muertes_accidentes`&nbsp;para<br>
+comprobar&nbsp;que&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;está&nbsp;accesible&nbsp;y&nbsp;que&nbsp;las&nbsp;tablas&nbsp;existen.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con&nbsp;el&nbsp;estado&nbsp;de&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;y&nbsp;conteos,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;o&nbsp;un&nbsp;error&nbsp;500&nbsp;si&nbsp;algo&nbsp;falla.</span></dd></dl>
+ <dl><dt><a name="-test_usuarios"><strong>test_usuarios</strong></a>()</dt><dd><span class="code">Endpoint&nbsp;específico&nbsp;para&nbsp;probar&nbsp;la&nbsp;tabla&nbsp;'usuarios'.<br>
+Realiza&nbsp;un&nbsp;COUNT(*)&nbsp;sobre&nbsp;la&nbsp;tabla&nbsp;`usuarios`&nbsp;para&nbsp;comprobar&nbsp;que&nbsp;existe<br>
+y&nbsp;que&nbsp;la&nbsp;conexión&nbsp;a&nbsp;la&nbsp;base&nbsp;de&nbsp;datos&nbsp;es&nbsp;correcta.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Response:&nbsp;JSON&nbsp;con&nbsp;el&nbsp;conteo&nbsp;de&nbsp;usuarios&nbsp;o&nbsp;error&nbsp;500&nbsp;si&nbsp;algo&nbsp;falla.</span></dd></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>TITULO_REPORTE</strong> = 'Muertes Accidentes Tránsito del municipio de Neiva'<br>
+<strong>app</strong> = &lt;Flask 'app'&gt;<br>
+<strong>letter</strong> = (612.0, 792.0)<br>
+<strong>request</strong> = &lt;LocalProxy unbound&gt;<br>
+<strong>session</strong> = &lt;LocalProxy unbound&gt;</td></tr></table>
+</body></html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module ver_campos_neiva</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">ver_campos_neiva</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:/home/mjgaar/proyecto_neiva/database/ver_campos_neiva.py">/home/mjgaar/proyecto_neiva/database/ver_campos_neiva.py</a></td></tr></table>
+    <p><span class="code">Script&nbsp;auxiliar&nbsp;para&nbsp;inspeccionar&nbsp;la&nbsp;estructura&nbsp;del&nbsp;dataset&nbsp;de&nbsp;Datos&nbsp;Abiertos<br>
+(2vxy-7tvy:&nbsp;Muertes&nbsp;por&nbsp;accidentes&nbsp;de&nbsp;tránsito&nbsp;-&nbsp;Municipio&nbsp;de&nbsp;Neiva).<br>
+&nbsp;<br>
+Este&nbsp;módulo&nbsp;realiza&nbsp;una&nbsp;petición&nbsp;HTTP&nbsp;al&nbsp;API&nbsp;de&nbsp;datos.gov.co,&nbsp;solicitando&nbsp;solo<br>
+1&nbsp;registro&nbsp;(`$limit=1`),&nbsp;con&nbsp;el&nbsp;fin&nbsp;de&nbsp;imprimir&nbsp;en&nbsp;consola:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;La&nbsp;cantidad&nbsp;de&nbsp;registros&nbsp;recibidos&nbsp;(1&nbsp;si&nbsp;la&nbsp;API&nbsp;responde&nbsp;correctamente)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;La&nbsp;estructura&nbsp;completa&nbsp;del&nbsp;primer&nbsp;registro&nbsp;(campos&nbsp;y&nbsp;valores)<br>
+&nbsp;<br>
+Su&nbsp;propósito&nbsp;principal&nbsp;es:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;✔&nbsp;Identificar&nbsp;rápidamente&nbsp;los&nbsp;nombres&nbsp;exactos&nbsp;de&nbsp;los&nbsp;campos&nbsp;del&nbsp;dataset<br>
+&nbsp;&nbsp;&nbsp;&nbsp;✔&nbsp;Verificar&nbsp;cambios&nbsp;en&nbsp;los&nbsp;atributos&nbsp;publicados&nbsp;por&nbsp;la&nbsp;API<br>
+&nbsp;&nbsp;&nbsp;&nbsp;✔&nbsp;Apoyar&nbsp;el&nbsp;proceso&nbsp;de&nbsp;mapeo&nbsp;y&nbsp;normalización&nbsp;de&nbsp;campos&nbsp;en&nbsp;los&nbsp;scripts&nbsp;del&nbsp;backend<br>
+&nbsp;<br>
+Uso&nbsp;típico:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;python&nbsp;ver_campos_neiva.py<br>
+&nbsp;<br>
+Salida&nbsp;esperada:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Cantidad&nbsp;de&nbsp;registros&nbsp;recibidos:&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Campos&nbsp;del&nbsp;primer&nbsp;registro:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{&nbsp;...&nbsp;estructura&nbsp;JSON&nbsp;completa&nbsp;...&nbsp;}</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="json.html">json</a><br>
+</td><td class="multicolumn"><a href="requests.html">requests</a><br>
+</td><td class="multicolumn"></td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>URL</strong> = 'https://www.datos.gov.co/resource/2vxy-7tvy.json?$limit=1'<br>
+<strong>data</strong> = [{'caracter_sticas_de_la_victima': 'Peatón', 'clase_de_accidente': 'Peatón Atropellado', 'comuna_corregimiento': '8', 'dia_de_la_semana': 'domingo', 'edad': '46', 'fecha_del_hecho': '2012-01-01T00:00:00.000', 'fecha_y_hora_del_hecho': '2012-01-01T05:05:00.000', 'genero': 'Masculino', 'hora_del_hecho_hh_mm': '1899-12-31T05:05:00.000', 'tipo_de_via_de_hechos': 'Municipal', ...}]<br>
+<strong>resp</strong> = &lt;Response [200]&gt;</td></tr></table>
+</body></html>

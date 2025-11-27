@@ -1,21 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+Script de carga y normalización de datos para la base `muertes_acc_neiva`.
+
+Este módulo:
+- Descarga registros desde el portal de Datos Abiertos de Colombia
+  (dataset: muertes por accidentes de tránsito en Neiva).
+- Normaliza campos clave (fecha, hora, día de la semana, comuna, clase de accidente,
+  características de la víctima).
+- Inserta los registros en la tabla `muertes_accidentes` de PostgreSQL, incluyendo:
+    - Campos derivados (año, mes).
+    - El JSON original como `fuente_raw` para trazabilidad/auditoría.
+
+Uso típico (desde consola):
+
+    python cargar_datos_neiva.py
+
+Al ejecutarse como script, descarga los datos y los inserta en la base de datos.
+"""
+
+
 import requests
 import psycopg2
 from psycopg2.extras import Json
 from datetime import datetime
 
+# Parámetros de conexión a la base de datos PostgreSQL
 DB_NAME = "muertes_acc_neiva"
 DB_USER = "neiva_user"
 DB_PASSWORD = "neiva123"
 DB_HOST = "localhost"
 DB_PORT = 5432
 
+# Endpoint del conjunto de datos en datos.gov.co (límite ampliado a 50.000 registros)
 DATA_URL = "https://www.datos.gov.co/resource/2vxy-7tvy.json?$limit=50000"
 
 
 def get_db_connection():
+    """
+    Crea y retorna una conexión nueva a la base de datos PostgreSQL.
+
+    Returns:
+        psycopg2.extensions.connection: Objeto de conexión activo.
+    """
     return psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -26,6 +54,17 @@ def get_db_connection():
 
 
 def descargar_datos():
+    """
+    Descarga los registros desde el portal de Datos Abiertos.
+
+    Utiliza `DATA_URL` como fuente y asume que la respuesta es un arreglo JSON.
+
+    Returns:
+        list[dict]: Lista de registros (cada uno como diccionario) si la descarga es exitosa.
+
+    Raises:
+        requests.HTTPError: Si la respuesta HTTP no es exitosa (4xx o 5xx).
+    """
     print("Descargando datos desde Datos Abiertos…")
     r = requests.get(DATA_URL)
     r.raise_for_status()
@@ -40,6 +79,18 @@ def parse_fecha(fecha_str: str):
     - datetime completo
     - año (int)
     - mes (int)
+
+        Ejemplo de entrada:
+        "2012-01-01T00:00:00.000"
+
+    Args:
+        fecha_str (str): Fecha del hecho en formato ISO (o None).
+
+    Returns:
+        tuple:
+            - datetime or None: Fecha completa del hecho.
+            - int or None: Año del hecho.
+            - int or None: Mes del hecho.
     """
     if not fecha_str:
         return None, None, None
@@ -55,6 +106,12 @@ def parse_hora(hora_str: str):
     """
     Convierte hora_del_hecho_hh_mm (ej. '1899-12-31T05:05:00.000') a TIME.
     Solo nos interesa la hora:minuto:segundo.
+
+    Args:
+        hora_str (str): Hora en formato ISO (o None).
+
+    Returns:
+        datetime.time or None: Hora del hecho o None si no se puede parsear.
     """
     if not hora_str:
         return None
@@ -65,6 +122,17 @@ def parse_hora(hora_str: str):
         return None
 
 def normalizar_dia_semana(t: str) -> str:
+    """
+    Normaliza el valor del día de la semana a una forma canónica con mayúscula inicial.
+
+    Mapea variantes en minúsculas y sin tilde a su forma estándar (ej. "miercoles" -> "Miércoles").
+
+    Args:
+        t (str): Texto original del día de la semana.
+
+    Returns:
+        str or None: Día normalizado o None si la entrada es vacía.
+    """
     if not t:
         return None
     t_low = t.strip().lower()
@@ -83,6 +151,18 @@ def normalizar_dia_semana(t: str) -> str:
 
 
 def normalizar_comuna(t: str) -> str:
+    """
+    Normaliza el nombre de la comuna o corregimiento.
+
+    Por ahora solo unifica el caso de 'Río Las Ceibas', pero se puede ampliar
+    con más reglas de normalización.
+
+    Args:
+        t (str): Texto original de la comuna/corregimiento.
+
+    Returns:
+        str or None: Nombre normalizado o None si la entrada es vacía.
+    """
     if not t:
         return None
     t_strip = t.strip()
@@ -95,6 +175,22 @@ def normalizar_comuna(t: str) -> str:
 
 
 def normalizar_caracteristica_victima(t: str) -> str:
+    """
+    Normaliza las características de la víctima a categorías homogéneas.
+
+    Agrupa descripciones libres en etiquetas como:
+        - "Conductor de moto"
+        - "Conductor de vehículo"
+        - "Pasajero de moto"
+        - "Pasajero de vehículo"
+        - "Peatón"
+
+    Args:
+        t (str): Texto libre original de la característica de la víctima.
+
+    Returns:
+        str or None: Descripción normalizada o None si la entrada es vacía.
+    """
     if not t:
         return None
     s = t.strip().lower()
@@ -114,6 +210,18 @@ def normalizar_caracteristica_victima(t: str) -> str:
 
 
 def insertar_registros(registros):
+    """
+    Inserta en la tabla `muertes_accidentes` los registros ya descargados y normalizados.
+
+    Para cada registro:
+        - Se parsean fecha y hora.
+        - Se normalizan día de la semana, comuna, clase de accidente y características.
+        - Se calcula año y mes.
+        - Se almacena el JSON completo en `fuente_raw` para trazabilidad.
+
+    Args:
+        registros (list[dict]): Lista de registros tal como se reciben desde Datos Abiertos.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -206,6 +314,24 @@ def insertar_registros(registros):
     print(f"✅ Inserción finalizada. Total registros insertados: {count}")
 
 def normalizar_clase_accidente(texto: str) -> str:
+    """
+    Normaliza la descripción de la clase de accidente a categorías predefinidas.
+
+    Ejemplos de mapeo:
+        - "colision ... objeto móvil" -> "Colisión con objeto móvil"
+        - "colision ... objeto fijo"  -> "Colisión con objeto fijo"
+        - "caida de ocupante"        -> "Caída de ocupante"
+        - "peaton atropellado"       -> "Peatón atropellado"
+        - "ciclista atropellado"     -> "Ciclista atropellado"
+        - "otra clase de accidente"  -> "Otra clase de accidente"
+        - "sin dato/sin datos"       -> "Sin dato"
+
+    Args:
+        texto (str): Descripción original de la clase de accidente.
+
+    Returns:
+        str or None: Cadena normalizada o None si la entrada es vacía.
+    """
     if not texto:
         return None
 
@@ -243,6 +369,8 @@ def normalizar_clase_accidente(texto: str) -> str:
 
 
 if __name__ == "__main__":
+    # Punto de entrada cuando se ejecuta el script directamente.
+    # Descarga los datos desde Datos Abiertos y los inserta en la base.
     data = descargar_datos()
     if data:
         insertar_registros(data)

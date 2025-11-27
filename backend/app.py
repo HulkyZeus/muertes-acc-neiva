@@ -1,3 +1,20 @@
+"""
+Backend Flask para el proyecto "Muertes Accidentes Tránsito del municipio de Neiva".
+
+Este módulo expone:
+- Endpoints de prueba de conexión a la base de datos.
+- Endpoints de autenticación (login / logout).
+- CRUD básico sobre la tabla `muertes_accidentes`.
+- Endpoints de estadísticas agregadas (por año, comuna, clase de accidente).
+- Funcionalidades de exportación de datos a Excel y PDF.
+
+Tecnologías clave:
+- Flask como framework web.
+- PostgreSQL como base de datos (psycopg2 como driver).
+- Pandas para manipulación de datos tabulares.
+- ReportLab para generación de reportes en PDF.
+"""
+
 from flask import Flask, jsonify, request, send_file, session
 from flask_cors import CORS
 import psycopg2
@@ -18,6 +35,7 @@ app.config["SECRET_KEY"] = os.environ.get(
     "dev-secret-key-cambia-esto-por-otro-string"
 )
 
+# Configuración de CORS para permitir el frontend (Vue) en desarrollo
 CORS(
     app,
     supports_credentials=True,
@@ -31,6 +49,15 @@ CORS(
     }
 )
 def get_db_connection():
+    """
+    Crea y devuelve una conexión nueva a la base de datos PostgreSQL.
+
+    Returns:
+        psycopg2.extensions.connection: Conexión abierta a la base de datos.
+
+    Raises:
+        psycopg2.Error: Si ocurre un error al conectarse a la base de datos.
+    """
     conn = psycopg2.connect(
         dbname="muertes_acc_neiva",
         user="neiva_user",
@@ -41,6 +68,12 @@ def get_db_connection():
     return conn
 @app.get("/")
 def index():
+    """
+    Endpoint raíz del backend.
+
+    Returns:
+        dict: Mensaje de estado simple para verificar que el backend está activo.
+    """
     return {
         "status": "ok",
         "message": "Backend Flask funcionando en Ubuntu Server 🚀"
@@ -49,6 +82,13 @@ def index():
 def test_db():
     """
     Endpoint general: verifica conexión y devuelve conteo de usuarios y accidentes.
+
+    Realiza un COUNT(*) sobre las tablas `usuarios` y `muertes_accidentes` para
+    comprobar que la base de datos está accesible y que las tablas existen.
+
+    Returns:
+        Response: JSON con el estado de la base de datos y conteos,
+                  o un error 500 si algo falla.
     """
     try:
         conn = get_db_connection()
@@ -80,6 +120,11 @@ def test_usuarios():
 
     """
     Endpoint específico para probar la tabla 'usuarios'.
+    Realiza un COUNT(*) sobre la tabla `usuarios` para comprobar que existe
+    y que la conexión a la base de datos es correcta.
+
+    Returns:
+        Response: JSON con el conteo de usuarios o error 500 si algo falla.
     """
     try:
         conn = get_db_connection()
@@ -148,6 +193,12 @@ def test_usuarios():
 def test_accidentes():
     """
     Endpoint específico para probar la tabla 'muertes_accidentes'.
+    
+    Realiza un COUNT(*) sobre la tabla para comprobar que existe y que la
+    conexión a la base de datos funciona correctamente.
+
+    Returns:
+        Response: JSON con el conteo de accidentes o error 500 si algo falla.
     """
     try:
         conn = get_db_connection()
@@ -171,6 +222,26 @@ def test_accidentes():
 
 @app.post("/api/login")
 def login():
+    """
+    Autentica a un usuario a partir de correo y contraseña.
+
+    Body JSON esperado:
+        - email (str): Correo del usuario.
+        - password (str): Contraseña en texto plano.
+
+    Flujo:
+        1. Valida que los campos existan.
+        2. Busca el usuario por correo en la tabla `usuarios`.
+        3. Verifica el hash de la contraseña.
+        4. Guarda en `session` el id y rol del usuario.
+
+    Returns:
+        Response: JSON con información básica del usuario y mensaje "login_ok"
+                  o un mensaje de error con el código HTTP correspondiente:
+                  - 400: missing_fields
+                  - 404: email_not_found
+                  - 401: invalid_password
+    """
     data = request.get_json() or {}
     correo = data.get("email")
     password = data.get("password")
@@ -196,10 +267,11 @@ def login():
 
     user_id, nombre, correo_db, password_hash, rol = row
 
+    # Validación contraseña
     if not check_password_hash(password_hash, password):
         return jsonify({"error": "invalid_password"}), 401
 
-    # 👇 Aquí se guarda la sesión
+    # Aquí se guarda la sesión
     session["id"] = user_id
     session["rol"] = rol
 
@@ -217,6 +289,14 @@ def login():
 
 @app.post("/api/logout")
 def logout():
+    """
+    Cierra la sesión del usuario autenticado.
+
+    Elimina todos los datos almacenados en `session`.
+
+    Returns:
+        Response: JSON con mensaje "logout_ok".
+    """
     # Elimina toda la sesión
     session.clear()
 
@@ -225,6 +305,13 @@ def logout():
     }), 200
 
 def require_login():
+    """
+    Verifica si existe un usuario autenticado en la sesión.
+
+    Returns:
+        bool: True si hay un usuario logueado (session["id"] existe),
+              False en caso contrario.
+    """
     print("SESSION EN require_login:", dict(session))
     return "id" in session
 
@@ -240,6 +327,11 @@ def listar_accidentes():
     - fecha_desde (Formato: YYYY-MM-DD)
     - fecha_hasta (Formato: YYYY-MM-DD)
     - limite (limit de registros, por defecto 100)
+
+    Returns:
+        Response: JSON con:
+            - total (int): Número de registros devueltos.
+            - items (list[dict]): Lista de accidentes.
     """
    
     comuna = request.args.get("comuna_corregimiento")
@@ -339,6 +431,11 @@ def listar_accidentes():
 def estadisticas_por_anio():
     """
     Devuelve total de accidentes por año (ano).
+
+     Returns:
+        Response: Lista JSON de objetos con:
+            - ano (int): Año de ocurrencia.
+            - total (int): Número de registros en ese año.
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -363,6 +460,10 @@ def estadisticas_por_anio():
 def estadisticas_por_comuna():
     """
     Devuelve total de accidentes por comuna_corregimiento.
+    Returns:
+        Response: Lista JSON de objetos con:
+            - comuna_corregimiento (str)
+            - total (int)
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -388,6 +489,11 @@ def estadisticas_por_comuna():
 def estadisticas_por_clase():
     """
     Devuelve total de accidentes por clase_de_accidente.
+    
+    Returns:
+        Response: Lista JSON de objetos con:
+            - clase_de_accidente (str)
+            - total (int)
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -412,11 +518,19 @@ def estadisticas_por_clase():
 @app.delete("/api/accidentes/<int:accidente_id>")
 def eliminar_accidente(accidente_id):
     """
-    Elimina un accidente por su id.
-    Respuestas:
-    - 204 No Content: eliminado correctamente
-    - 404 Not Found: no existe el id
-    - 500 Internal Server Error: fallo del servidor
+    Elimina un registro de accidente por su id.
+    Precondición:
+        - El usuario debe estar autenticado (sesión activa).
+
+    Args:
+        accidente_id (int): Identificador del accidente a eliminar.
+
+    Returns:
+        Response:
+            - 204 No Content: Eliminado correctamente.
+            - 404 Not Found: No existe un registro con ese id.
+            - 401 Unauthorized: Si no hay sesión iniciada.
+            - 500 Internal Server Error: Error inesperado del servidor.
     """
     if require_login():
         return jsonify({"error": "not_authenticated"}), 401
@@ -454,20 +568,28 @@ def eliminar_accidente(accidente_id):
 def crear_accidente():
     """
     Crea un nuevo registro de accidente en la tabla muertes_accidentes.
-    Espera un JSON con los campos:
-    - fecha_del_hecho (YYYY-MM-DD)
-    - dia_de_la_semana
-    - hora_del_hecho (HH:MM o HH:MM:SS)
-    - comuna_corregimiento
-    - tipo_de_via_de_hechos
-    - clase_de_accidente
-    - genero
-    - edad
-    - caracteristicas_de_la_victima
-    - vehiculo_de_la_victima
-    - vehiculo_2_de_la_contraparte (opcional)
-    - vehiculo_3_de_la_contraparte (opcional)
-    - vehiculo_4_de_la_contraparte (opcional)
+    Body JSON esperado (campos obligatorios):
+        - fecha_del_hecho (str, YYYY-MM-DD)
+        - dia_de_la_semana (str)
+        - hora_del_hecho (str, HH:MM o HH:MM:SS)
+        - comuna_corregimiento (str)
+        - tipo_de_via_de_hechos (str)
+        - clase_de_accidente (str)
+        - genero (str)
+        - edad (int o str convertible a int)
+        - caracteristicas_de_la_victima (str)
+        - vehiculo_de_la_victima (str)
+
+    Campos opcionales:
+        - vehiculo_2_de_la_contraparte
+        - vehiculo_3_de_la_contraparte
+        - vehiculo_4_de_la_contraparte
+
+    Returns:
+        Response:
+            - 201 Created: con el id del nuevo registro.
+            - 400 Bad Request: si falta algún campo obligatorio.
+            - 500 Internal Server Error: si ocurre un error al insertar.
     """
     data = request.get_json() or {}
 
@@ -567,6 +689,16 @@ def actualizar_accidente(accidente_id):
     - vehiculo_2_de_la_contraparte
     - vehiculo_3_de_la_contraparte
     - vehiculo_4_de_la_contraparte
+
+    Args:
+        accidente_id (int): Identificador del accidente a actualizar.
+    
+    Returns:
+        Response:
+            - 200 OK: si el registro fue actualizado.
+            - 400 Bad Request: si falta algún campo obligatorio.
+            - 404 Not Found: si el id no existe.
+            - 500 Internal Server Error: si hay error en la actualización.
     """
     data = request.get_json() or {}
 
@@ -657,8 +789,22 @@ def actualizar_accidente(accidente_id):
         return jsonify({"error": "Error interno al actualizar el accidente"}), 500
 # --- Función de Utilidad ---
 def obtener_datos_accidentes(filtros):
+    """
+    Obtiene los registros de `muertes_accidentes` aplicando filtros dinámicos.
+
+    Args:
+        filtros (dict): Diccionario con posibles claves:
+            - fecha_desde (str, YYYY-MM-DD)
+            - fecha_hasta (str, YYYY-MM-DD)
+            - comuna_corregimiento (str)
+            - tipo_via (str, mapeado a tipo_de_via_de_hechos)
+
+    Returns:
+        list[dict]: Lista de registros convertidos a diccionario, listos para exportar.
+    """
+
     # Asume que 'filtros' es un diccionario con todos los query params
-    
+
     condiciones = []
     params = []
     print
@@ -751,7 +897,13 @@ def obtener_datos_accidentes(filtros):
 TITULO_REPORTE = "Muertes Accidentes Tránsito del municipio de Neiva"
 
 def formatear_filtros(filtros: dict) -> list[tuple]:
-    """Convierte los parámetros de filtro de la URL a una lista de tuplas legible."""
+    """Convierte los parámetros de filtro de la URL a una lista de tuplas legible.
+    Args:
+        filtros (dict): Diccionario con filtros tal como llegan por `request.args`.
+
+    Returns:
+        list[tuple[str, str]]: Lista de pares (nombre_filtro_legible, valor).
+    """
     filtros_legibles = []
     
     # Mapeo de nombres técnicos a nombres legibles en español
@@ -773,6 +925,20 @@ def formatear_filtros(filtros: dict) -> list[tuple]:
     return filtros_legibles
 @app.get("/api/exportar")
 def exportar_datos():
+    """
+    Exporta los registros de `muertes_accidentes` a Excel o PDF según los filtros.
+
+    Query params:
+        - formato (str): "excel" o "pdf" (obligatorio).
+        - mismos filtros que `obtener_datos_accidentes`:
+          (fecha_desde, fecha_hasta, comuna_corregimiento, tipo_via, etc.)
+
+    Returns:
+        Response:
+            - Archivo Excel (.xlsx) o PDF descargable.
+            - 400 Bad Request: si el formato no es soportado.
+            - 404 Not Found: si no hay datos para los filtros aplicados.
+    """
     formato = request.args.get("formato", "").lower()
     
     # Obtener todos los filtros de la URL como un diccionario
@@ -785,7 +951,7 @@ def exportar_datos():
     if not datos:
         return jsonify({"error": "No hay datos para exportar con los filtros proporcionados."}), 404
 
-    # --- LÓGICA DE EXPORTACIÓN ---
+    # --- LÓGICA DE EXPORTACIÓN A EXCEL---
 
     if formato == "excel":
         
@@ -824,7 +990,7 @@ def exportar_datos():
             download_name='accidentes_neiva_exportado.xlsx', 
             as_attachment=True 
         )
-
+    # --- Exportación a PDF ---
     elif formato == "pdf":
         
         pdf_buffer = generar_pdf(datos, filtros) 
@@ -866,7 +1032,7 @@ def exportar_datos():
             download_name='accidentes.xlsx', # El nombre del archivo que verá el usuario
             as_attachment=True # Indica al navegador que la respuesta es un archivo para descargar
         )
-
+    # --- Exportación a PDF ---
     elif formato == "pdf":
         pdf_buffer = generar_pdf(datos) 
         
@@ -882,6 +1048,16 @@ def exportar_datos():
         return jsonify({"error": "Formato no soportado. Use 'excel' o 'pdf'."}), 400
 
 def generar_pdf(datos, filtros_aplicados):
+    """
+    Genera un reporte en PDF a partir de los datos de accidentes y filtros aplicados.
+
+    Args:
+        datos (list[dict]): Registros a incluir en la tabla del reporte.
+        filtros_aplicados (dict): Filtros originales recibidos en la petición.
+
+    Returns:
+        BytesIO: Buffer en memoria posicionado al inicio listo para ser enviado con send_file.
+    """
     buffer = BytesIO()
     # Definición del documento PDF
     doc = SimpleDocTemplate(buffer, pagesize=letter,
@@ -954,4 +1130,5 @@ def generar_pdf(datos, filtros_aplicados):
     return buffer
 if __name__ == "__main__":
     # Solo para modo desarrollo
+    # En producción, la aplicación se sirve desde app.wsgi con Apache/mod_wsgi.
     app.run(host="0.0.0.0", port=5000, debug=True)
